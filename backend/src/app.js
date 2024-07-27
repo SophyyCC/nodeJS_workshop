@@ -7,7 +7,7 @@ import cors from "cors";
 import { getDatabase } from "./data/database.js";
 
 // Set's our port to the PORT environment variable, or 3000 by default if the env is not configured.
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.PORT ?? 3000; //will take port value in .env
 
 // Creates the express server
 const app = express();

@@ -1,21 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TodoList from "./components/TodoList";
 import styles from "./App.module.css";
 import AddTodoForm from "./components/AddTodoForm";
 import AddButton from "./components/AddButton";
 import BottomDrawer from "./components/BottomDrawer";
 import SearchBar from "./components/SearchBar";
-import { initialTodos } from "./initial-todos";
+import { getTodos, editTodos, deleteTodos, createTodos } from "./api.js";
 
 export default function App() {
   // True if the "add todo" form should be shown, false otherwise.
   const [showAddForm, setShowAddForm] = useState(false);
 
   // The todo list
-  const [todos, setTodos] = useState(initialTodos);
+  const [todos, setTodos] = useState([]);
 
   // The search string to use to filter the displayed todos.
   const [search, setSearch] = useState("");
+
+  // useEffect(() => {   //********************************************************
+  //   fetch("http://localhost:3001/api/todos/")
+  //   .then((response) => response.json())
+  //   .then((todos) => setTodos(todos));
+  // }, []);
+
+  useEffect(() => {
+    getTodos().then((data) => setTodos(data));
+  }, []);
 
   /**
    * Creates a new todo.
@@ -28,7 +38,7 @@ export default function App() {
       id: todos[todos.length - 1].id + 1,
       description,
       dueDate,
-      isComplete: false,
+      isComplete: false
     };
     setTodos([...todos, newTodo]);
   }
@@ -40,10 +50,16 @@ export default function App() {
    */
   function toggleComplete(id) {
     setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, isComplete: !todo.isComplete } : todo
-      )
+      todos.map((todo) => (todo.id === id ? { ...todo, isComplete: !todo.isComplete } : todo))
     );
+
+    const todo = todos.find((todo) => todo.id === id); // filter returns list
+
+    if (todo == null) return;
+
+    editTodos(id, {
+      isComplete: !todo.isComplete
+    });
   }
 
   /**
@@ -57,9 +73,7 @@ export default function App() {
 
   // Apply search filter
   const filteredTodos = todos.filter(
-    (todo) =>
-      search.length === 0 ||
-      todo.description.toLowerCase().includes(search.toLowerCase())
+    (todo) => search.length === 0 || todo.description.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -85,10 +99,7 @@ export default function App() {
       <BottomDrawer>
         <div className={styles.container}>
           {showAddForm ? (
-            <AddTodoForm
-              onSubmit={createTodo}
-              onCancel={() => setShowAddForm(false)}
-            />
+            <AddTodoForm onSubmit={createTodo} onCancel={() => setShowAddForm(false)} />
           ) : (
             <div style={{ display: "flex", flexDirection: "row-reverse" }}>
               <AddButton onClick={() => setShowAddForm(!showAddForm)} />
